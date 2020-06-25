@@ -11,7 +11,7 @@ class FileHandlerTest extends TestCase {
 
     protected function setUp(): void {
 
-        $this->test_args = [ 'script.php', 'tests/ok.log' ];
+        $this->test_args = [ 'script.php', 'logs/ok.log' ];
         $this->class_reflection = new ReflectionClass( 'FileHandler' );
     }
 
@@ -33,7 +33,7 @@ class FileHandlerTest extends TestCase {
         return [
 
             [
-                [ 1 => 'tests/ok.log' ],
+                [ 1 => 'logs/ok.log' ],
                 [
                     [ '/home', '192.168.1.1' ],
                     [ '/home', '192.168.1.1' ],
@@ -43,7 +43,7 @@ class FileHandlerTest extends TestCase {
                 ]
             ],
             [
-                [ 1 => 'tests/corrupted.log' ],
+                [ 1 => 'logs/corrupted.log' ],
                 null
             ],
         ];
@@ -96,11 +96,11 @@ class FileHandlerTest extends TestCase {
     public function validateArgsProvider() {
         return [
 
-            [ [ 'script.php', 'tests/ok.log' ], true ],
+            [ [ 'script.php', 'logs/ok.log' ], true ],
             [ [ 'script.php', '' ], 'No file provided' ],
             [ [ 'script.php' ], 'No file provided' ],
-            [ [ 'script.php', 'tests/ne.log' ], 'tests/ne.log file not exists' ],
-            [ [ 'script.php', 'tests/ne.log' ], 'tests/ne.log file not exists' ],
+            [ [ 'script.php', 'logs/ne.log' ], 'logs/ne.log file not exists' ],
+            [ [ 'script.php', 'logs/ne.log' ], 'logs/ne.log file not exists' ],
 
         ];
     }
