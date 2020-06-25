@@ -75,10 +75,6 @@ class FileHandler {
 
     private function validateFileSize( int $filesize ): bool {
 
-        // Best practice here is to split 'too large' file into the pieces that fit
-        // PHP memory limit and count them separately but I did not manage to do
-        // and test it in the allotted 2.5 hours :)
-
         $memory_limit = ini_get( 'memory_limit' );
         if ( $memory_limit != - 1 ) {
 
