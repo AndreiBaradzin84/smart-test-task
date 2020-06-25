@@ -1,49 +1,52 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use SmartTest\FileHandler;
 
-require_once 'classes/FileHandler.php';
+require_once 'vendor/autoload.php';
 
-class FileHandlerTest extends TestCase {
+class FileHandlerTest extends TestCase
+{
 
     protected $test_args;
     protected $class_reflection;
 
-    protected function setUp(): void {
-
-        $this->test_args = [ 'script.php', 'logs/ok.log' ];
-        $this->class_reflection = new ReflectionClass( 'FileHandler' );
+    protected function setUp(): void
+    {
+        $this->test_args = ['script.php', 'logs/ok.log'];
+        $this->class_reflection = new ReflectionClass('SmartTest\FileHandler');
     }
 
     /**
      * @dataProvider getDataProvider
      */
-    public function testGetData( $args, $expected ): void {
+    public function testGetData($args, $expected): void
+    {
+        $file_handler = new FileHandler($args);
 
-        $file_handler = new FileHandler( $args );
-
-        if ( $expected === null ) {
-            $this->expectExceptionMessage( 'No valid data in logfile' );
+        if ($expected === null) {
+            $this->expectExceptionMessage('No valid data in logfile');
         }
 
-        $this->assertEquals( $file_handler->getData(), $expected );
+        $this->assertEquals($file_handler->getData(), $expected);
     }
 
-    public function getDataProvider() {
+    public function getDataProvider()
+    {
         return [
 
             [
-                [ 1 => 'logs/ok.log' ],
+                [1 => 'logs/ok.log'],
                 [
-                    [ '/home', '192.168.1.1' ],
-                    [ '/home', '192.168.1.1' ],
-                    [ '/help', '192.168.1.1' ],
-                    [ '/help', '192.168.1.2' ],
-                    [ '/help', '192.168.1.2' ],
+                    ['/home', '192.168.1.1'],
+                    ['/home', '192.168.1.1'],
+                    ['/help', '192.168.1.1'],
+                    ['/help', '192.168.1.2'],
+                    ['/help', '192.168.1.2'],
                 ]
             ],
             [
-                [ 1 => 'logs/corrupted.log' ],
+                [1 => 'logs/corrupted.log'],
                 null
             ],
         ];
@@ -52,24 +55,25 @@ class FileHandlerTest extends TestCase {
     /**
      * @dataProvider checkDataPairProvider
      */
-    public function testCheckDataPair( $pair, $expected ): void {
+    public function testCheckDataPair($pair, $expected): void
+    {
+        $method = $this->class_reflection->getMethod('checkDataPair');
+        $method->setAccessible(true);
 
-        $method = $this->class_reflection->getMethod( 'checkDataPair' );
-        $method->setAccessible( true );
+        $file_handler = new FileHandler($this->test_args);
 
-        $file_handler = new FileHandler( $this->test_args );
+        $result = $method->invoke($file_handler, $pair);
 
-        $result = $method->invoke( $file_handler, $pair );
-
-        $this->assertEquals( $result, $expected );
+        $this->assertEquals($result, $expected);
     }
 
-    public function checkDataPairProvider() {
+    public function checkDataPairProvider()
+    {
         return [
 
-            [ [ '/home', '192.168.1.1' ], true ],
-            [ [ '/home', '' ], false ],
-            [ [ '/home', 'justastring' ], false ],
+            [['/home', '192.168.1.1'], true],
+            [['/home', ''], false],
+            [['/home', 'justastring'], false],
 
         ];
     }
@@ -77,30 +81,31 @@ class FileHandlerTest extends TestCase {
     /**
      * @dataProvider validateArgsProvider
      */
-    public function testValidateArgs( $args, $expected ): void {
+    public function testValidateArgs($args, $expected): void
+    {
+        $method = $this->class_reflection->getMethod('validateArgs');
+        $method->setAccessible(true);
 
-        $method = $this->class_reflection->getMethod( 'validateArgs' );
-        $method->setAccessible( true );
+        $file_handler = new FileHandler($this->test_args);
 
-        $file_handler = new FileHandler( $this->test_args );
-
-        if ( $expected !== true ) {
-            $this->expectExceptionMessage( $expected );
+        if ($expected !== true) {
+            $this->expectExceptionMessage($expected);
         }
 
-        $result = $method->invoke( $file_handler, $args );
+        $result = $method->invoke($file_handler, $args);
 
-        $this->assertEquals( $result, $expected );
+        $this->assertEquals($result, $expected);
     }
 
-    public function validateArgsProvider() {
+    public function validateArgsProvider()
+    {
         return [
 
-            [ [ 'script.php', 'logs/ok.log' ], true ],
-            [ [ 'script.php', '' ], 'No file provided' ],
-            [ [ 'script.php' ], 'No file provided' ],
-            [ [ 'script.php', 'logs/ne.log' ], 'logs/ne.log file not exists' ],
-            [ [ 'script.php', 'logs/ne.log' ], 'logs/ne.log file not exists' ],
+            [['script.php', 'logs/ok.log'], true],
+            [['script.php', ''], 'No file provided'],
+            [['script.php'], 'No file provided'],
+            [['script.php', 'logs/ne.log'], 'logs/ne.log file not exists'],
+            [['script.php', 'logs/ne.log'], 'logs/ne.log file not exists'],
 
         ];
     }
@@ -108,31 +113,31 @@ class FileHandlerTest extends TestCase {
     /**
      * @dataProvider validateFileSizeProvider
      */
-    public function testValidateFileSize( $filesize, $expected ): void {
+    public function testValidateFileSize($filesize, $expected): void
+    {
+        $method = $this->class_reflection->getMethod('validateFileSize');
+        $method->setAccessible(true);
 
-        $method = $this->class_reflection->getMethod( 'validateFileSize' );
-        $method->setAccessible( true );
+        $file_handler = new FileHandler($this->test_args);
 
-        $file_handler = new FileHandler( $this->test_args );
+        $result = $method->invoke($file_handler, $filesize);
 
-        $result = $method->invoke( $file_handler, $filesize );
-
-        $this->assertEquals( $result, $expected );
+        $this->assertEquals($result, $expected);
     }
 
-    public function validateFileSizeProvider() {
+    public function validateFileSizeProvider()
+    {
+        $memory_limit = ini_get('memory_limit');
 
-        $memory_limit = ini_get( 'memory_limit' );
+        if ($memory_limit != -1) {
 
-        if ( $memory_limit != - 1 ) {
+            preg_match("@[kmg]@i", $memory_limit, $letter);
 
-            preg_match( "@[kmg]@i", $memory_limit, $letter );
+            if ( ! empty($letter)) {
 
-            if ( ! empty( $letter ) ) {
-
-                $letter = strtolower( $letter[0] );
-                $memory_limit = (int) $memory_limit;
-                switch ( $letter ) {
+                $letter = strtolower($letter[0]);
+                $memory_limit = (int)$memory_limit;
+                switch ($letter) {
                     case 'k' :
                         {
                             $memory_limit = $memory_limit * 1024;
@@ -153,9 +158,9 @@ class FileHandlerTest extends TestCase {
 
             return [
 
-                [ $memory_limit * 0.7, true ],
-                [ $memory_limit * 0.5, true ],
-                [ $memory_limit * 0.8, false ],
+                [$memory_limit * 0.7, true],
+                [$memory_limit * 0.5, true],
+                [$memory_limit * 0.8, false],
 
             ];
         }

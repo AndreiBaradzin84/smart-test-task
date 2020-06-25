@@ -1,69 +1,71 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use SmartTest\DataHandler;
 
-require_once 'classes/DataHandler.php';
+require_once 'vendor/autoload.php';
 
-class DataHandlerTest extends TestCase {
+class DataHandlerTest extends TestCase
+{
 
     protected $test_data;
     protected $class_reflection;
 
-    protected function setUp(): void {
-
+    protected function setUp(): void
+    {
         $this->test_data = [
-            [ '/home', '192.168.1.1' ],
-            [ '/home', '192.168.1.1' ],
-            [ '/help', '192.168.1.1' ],
-            [ '/help', '192.168.1.2' ],
-            [ '/help', '192.168.1.2' ]
+            ['/home', '192.168.1.1'],
+            ['/home', '192.168.1.1'],
+            ['/help', '192.168.1.1'],
+            ['/help', '192.168.1.2'],
+            ['/help', '192.168.1.2']
         ];
 
-        $this->class_reflection = new ReflectionClass( 'DataHandler' );
+        $this->class_reflection = new ReflectionClass('SmartTest\DataHandler');
     }
 
-    public function testGetStats(): void {
-
+    public function testGetStats(): void
+    {
         $expected = [
-            'all'    => [ '/help' => 3, '/home' => 2 ],
-            'unique' => [ '/help' => 2, '/home' => 1 ],
+            'all'    => ['/help' => 3, '/home' => 2],
+            'unique' => ['/help' => 2, '/home' => 1],
         ];
 
-        $data_handler = new DataHandler( $this->test_data );
+        $data_handler = new DataHandler($this->test_data);
 
-        $this->assertEquals( $data_handler->getStats(), $expected );
+        $this->assertEquals($data_handler->getStats(), $expected);
     }
 
-    public function testGetUnique(): void {
-
+    public function testGetUnique(): void
+    {
         $expected = [
-            [ '/home', '192.168.1.1' ],
-            [ '/help', '192.168.1.1' ],
-            [ '/help', '192.168.1.2' ]
+            ['/home', '192.168.1.1'],
+            ['/help', '192.168.1.1'],
+            ['/help', '192.168.1.2']
         ];
 
-        $method = $this->class_reflection->getMethod( 'getUnique' );
-        $method->setAccessible( true );
+        $method = $this->class_reflection->getMethod('getUnique');
+        $method->setAccessible(true);
 
-        $data_handler = new DataHandler( $this->test_data );
+        $data_handler = new DataHandler($this->test_data);
 
-        $result = $method->invoke( $data_handler, $this->test_data );
+        $result = $method->invoke($data_handler, $this->test_data);
 
-        $this->assertEqualsCanonicalizing( $expected, $result );
+        $this->assertEqualsCanonicalizing($expected, $result);
     }
 
-    public function testCountArray(): void {
+    public function testCountArray(): void
+    {
+        $expected = ['/home' => 2, '/help' => 3];
 
-        $expected = [ '/home' => 2, '/help' => 3 ];
+        $method = $this->class_reflection->getMethod('countArray');
+        $method->setAccessible(true);
 
-        $method = $this->class_reflection->getMethod( 'countArray' );
-        $method->setAccessible( true );
+        $data_handler = new DataHandler($this->test_data);
 
-        $data_handler = new DataHandler( $this->test_data );
+        $result = $method->invoke($data_handler, $this->test_data);
 
-        $result = $method->invoke( $data_handler, $this->test_data );
-
-        $this->assertEquals( $expected, $result );
+        $this->assertEquals($expected, $result);
     }
 
 }
