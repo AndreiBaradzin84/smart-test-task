@@ -8,21 +8,21 @@ require_once 'vendor/autoload.php';
 class FileHandlerTest extends TestCase
 {
 
-    protected $test_args;
+    protected $filename;
     protected $class_reflection;
 
     protected function setUp(): void
     {
-        $this->test_args = ['script.php', 'logs/ok.log'];
+        $this->filename = 'logs/ok.log';
         $this->class_reflection = new ReflectionClass('SmartTest\FileHandler');
     }
 
     /**
      * @dataProvider getDataProvider
      */
-    public function testGetData($args, $expected): void
+    public function testGetData($filename, $expected): void
     {
-        $file_handler = new FileHandler($args);
+        $file_handler = new FileHandler($filename);
 
         if ($expected === null) {
             $this->expectExceptionMessage('No valid data in logfile');
@@ -36,7 +36,7 @@ class FileHandlerTest extends TestCase
         return [
 
             [
-                [1 => 'logs/ok.log'],
+                'logs/ok.log',
                 [
                     ['/home', '192.168.1.1'],
                     ['/home', '192.168.1.1'],
@@ -46,7 +46,7 @@ class FileHandlerTest extends TestCase
                 ]
             ],
             [
-                [1 => 'logs/corrupted.log'],
+                'logs/corrupted.log',
                 null
             ],
         ];
@@ -60,7 +60,7 @@ class FileHandlerTest extends TestCase
         $method = $this->class_reflection->getMethod('checkDataPair');
         $method->setAccessible(true);
 
-        $file_handler = new FileHandler($this->test_args);
+        $file_handler = new FileHandler($this->filename);
 
         $result = $method->invoke($file_handler, $pair);
 
@@ -79,38 +79,6 @@ class FileHandlerTest extends TestCase
     }
 
     /**
-     * @dataProvider validateArgsProvider
-     */
-    public function testValidateArgs($args, $expected): void
-    {
-        $method = $this->class_reflection->getMethod('validateArgs');
-        $method->setAccessible(true);
-
-        $file_handler = new FileHandler($this->test_args);
-
-        if ($expected !== true) {
-            $this->expectExceptionMessage($expected);
-        }
-
-        $result = $method->invoke($file_handler, $args);
-
-        $this->assertEquals($result, $expected);
-    }
-
-    public function validateArgsProvider()
-    {
-        return [
-
-            [['script.php', 'logs/ok.log'], true],
-            [['script.php', ''], 'No file provided'],
-            [['script.php'], 'No file provided'],
-            [['script.php', 'logs/ne.log'], 'logs/ne.log file not exists'],
-            [['script.php', 'logs/ne.log'], 'logs/ne.log file not exists'],
-
-        ];
-    }
-
-    /**
      * @dataProvider validateFileSizeProvider
      */
     public function testValidateFileSize($filesize, $expected): void
@@ -118,7 +86,7 @@ class FileHandlerTest extends TestCase
         $method = $this->class_reflection->getMethod('validateFileSize');
         $method->setAccessible(true);
 
-        $file_handler = new FileHandler($this->test_args);
+        $file_handler = new FileHandler($this->filename);
 
         $result = $method->invoke($file_handler, $filesize);
 

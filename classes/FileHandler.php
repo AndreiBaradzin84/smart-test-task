@@ -8,11 +8,20 @@ class FileHandler
     private $file_handle;
     private $filename;
 
-    public function __construct(array $args)
+    public function __construct(string $filename)
     {
-        if ($this->validateArgs($args)) {
-            $this->file_handle = fopen($this->filename, "r");
+        $this->filename = $filename;
+
+        if ( ! $this->validateFileSize(filesize($this->filename))) {
+            throw new FileHandlerException($this->filename . ' file too large');
         }
+
+        $this->file_handle = fopen($this->filename, "r");
+    }
+
+    public function __destruct()
+    {
+        fclose($this->file_handle);
     }
 
     public function getData(): array
@@ -51,26 +60,6 @@ class FileHandler
 
             return false;
         }
-
-        return true;
-    }
-
-    private function validateArgs(array $args): bool
-    {
-        if ( ! array_key_exists(1, $args) || empty($args[1])) {
-            throw new FileHandlerException('No file provided');
-        }
-
-        if ( ! file_exists($args[1])) {
-            throw new FileHandlerException($args[1] . ' file not exists');
-        }
-
-        if ( ! $this->validateFileSize(filesize($args[1]))) {
-
-            throw new FileHandlerException($args[1] . ' file too large');
-        }
-
-        $this->filename = $args[1];
 
         return true;
     }
